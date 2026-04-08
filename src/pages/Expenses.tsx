@@ -38,16 +38,15 @@ export default function Expenses() {
     { value: "Entertainment", label: "Entertainment" },
   ];
 
-  const goalCategoryOptions = categoryOptions.filter(
-    (c) => c.value !== "All"
-  );
+  const goalCategoryOptions = categoryOptions.filter((c) => c.value !== "All");
+
   /* ---------------- GET EXPENSES ---------------- */
 
   const getExpenses = async () => {
     try {
       const res = await api.get("/expenses");
       setExpenses(res.data.data);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load expenses");
     }
   };
@@ -70,7 +69,7 @@ export default function Expenses() {
       await api.post("/expenses", {
         title,
         amount: Number(amount),
-        category,
+        category, // string
       });
 
       toast.success("Expense added");
@@ -80,7 +79,7 @@ export default function Expenses() {
       setCategory("Food");
 
       getExpenses();
-    } catch (error) {
+    } catch {
       toast.error("Failed to add expense");
     }
   };
@@ -90,11 +89,9 @@ export default function Expenses() {
   const deleteExpense = async (id: string) => {
     try {
       await api.delete(`/expenses/${id}`);
-
-      setExpenses(expenses.filter((e) => e._id !== id));
-
+      setExpenses((prev) => prev.filter((e) => e._id !== id));
       toast.success("Expense deleted");
-    } catch (error) {
+    } catch {
       toast.error("Delete failed");
     }
   };
@@ -110,30 +107,27 @@ export default function Expenses() {
 
   const totalExpense = filteredExpenses.reduce(
     (sum, expense) => sum + expense.amount,
-    0
+    0,
   );
 
   return (
     <div className="space-y-6">
       {/* Header */}
-
       <div className="flex justify-between items-center">
         <h2 className="text-2xl font-bold">Expense Tracker</h2>
 
         <div className="flex items-center gap-4">
           {/* Total Expense */}
-
           <div className="bg-indigo-500 text-white px-4 py-2 rounded-lg">
             Total : ₹{totalExpense}
           </div>
 
           {/* Category Filter */}
-
           <div className="w-60">
-            <Select
+            <Select<OptionType>
               options={categoryOptions}
               value={filterCategory}
-              onChange={(option) => setFilterCategory(option as OptionType)}
+              onChange={(option) => setFilterCategory(option!)}
               placeholder="Filter Category"
             />
           </div>
@@ -141,7 +135,6 @@ export default function Expenses() {
       </div>
 
       {/* Add Expense Form */}
-
       <form
         onSubmit={addExpense}
         className="bg-white shadow-md p-4 rounded-xl grid md:grid-cols-4 gap-4"
@@ -149,7 +142,7 @@ export default function Expenses() {
         <input
           type="text"
           placeholder="Title"
-          className="border p-1 rounded"
+          className="border p-2 rounded"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
@@ -157,24 +150,25 @@ export default function Expenses() {
         <input
           type="number"
           placeholder="Amount"
-          className="border p-1 rounded"
+          className="border p-2 rounded"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
         />
-<Select
+
+        {/* Category Select */}
+        <Select<OptionType>
           options={goalCategoryOptions}
-          value={category}
-          onChange={(option) => setCategory(option as OptionType)}
+          value={goalCategoryOptions.find((c) => c.value === category)}
+          onChange={(option) => setCategory(option?.value || "")}
+          placeholder="Select Category"
         />
 
-
-        <button className="bg-indigo-500 text-white rounded">
+        <button className="bg-indigo-500 text-white rounded px-4">
           Add Expense
         </button>
       </form>
 
       {/* Expense Table */}
-
       <div className="bg-white shadow rounded-xl">
         <table className="w-full">
           <thead className="bg-gray-100">
@@ -191,17 +185,11 @@ export default function Expenses() {
             {filteredExpenses.map((e) => (
               <tr key={e._id} className="border-t">
                 <td className="p-3">{e.title}</td>
-
                 <td className="p-3">{e.category}</td>
-
-                <td className="p-3 text-red-500 font-medium">
-                  ₹{e.amount}
-                </td>
-
+                <td className="p-3 text-red-500 font-medium">₹{e.amount}</td>
                 <td className="p-3">
                   {new Date(e.createdAt).toLocaleDateString()}
                 </td>
-
                 <td className="p-3">
                   <button
                     onClick={() => deleteExpense(e._id)}

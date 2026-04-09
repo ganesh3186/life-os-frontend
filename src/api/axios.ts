@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://life-os-backend-s2mg.onrender.com/api",
+  baseURL: "https://life-os-backend-u4ih.onrender.com/api",
   // baseURL: "http://localhost:5000/api",
   withCredentials: true,
 });
